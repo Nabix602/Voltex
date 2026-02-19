@@ -1,0 +1,109 @@
+// ============================================================
+//  VAULTEX — Système de comptes local (localStorage)
+// ============================================================
+
+const VX = {
+
+  // ── UTILS ────────────────────────────────────────────────
+  getUsers()        { return JSON.parse(localStorage.getItem('vx_users')   || '{}');   },
+  saveUsers(u)      { localStorage.setItem('vx_users',   JSON.stringify(u));            },
+  getSession()      { return JSON.parse(localStorage.getItem('vx_session') || 'null'); },
+  saveSession(u)    { localStorage.setItem('vx_session', JSON.stringify(u));            },
+  clearSession()    { localStorage.removeItem('vx_session');                            },
+
+  // ── AUTH ─────────────────────────────────────────────────
+  register(username, email, password) {
+    const users = this.getUsers();
+    if (Object.values(users).find(u => u.email === email))
+      return { ok: false, error: 'Cet email est déjà utilisé.' };
+    if (Object.values(users).find(u => u.username.toLowerCase() === username.toLowerCase()))
+      return { ok: false, error: 'Ce pseudo est déjà pris.' };
+    const id = 'u_' + Date.now();
+    users[id] = {
+      id, username, email,
+      password: btoa(password),
+      avatar: '🧑‍🚀',
+      level: 1, xp: 0,
+      scores: {}, favorites: [], history: [],
+      createdAt: Date.now()
+    };
+    this.saveUsers(users);
+    this.saveSession({ id, username, email, avatar: '🧑‍🚀' });
+    return { ok: true };
+  },
+
+  login(email, password) {
+    const users = this.getUsers();
+    const user = Object.values(users).find(u => u.email === email);
+    if (!user)                          return { ok: false, error: 'Aucun compte avec cet email.' };
+    if (user.password !== btoa(password)) return { ok: false, error: 'Mot de passe incorrect.' };
+    this.saveSession({ id: user.id, username: user.username, email: user.email, avatar: user.avatar });
+    return { ok: true };
+  },
+
+  logout() { this.clearSession(); window.location.href = 'index.html'; },
+  isLoggedIn() { return !!this.getSession(); },
+
+  getCurrentUser() {
+    const s = this.getSession();
+    if (!s) return null;
+    return this.getUsers()[s.id] || null;
+  },
+
+  // ── SCORES ───────────────────────────────────────────────
+  saveScore(gameId, score) {
+    const s = this.getSession(); if (!s) return;
+    const users = this.getUsers();
+    const u = users[s.id]; if (!u) return;
+    const isRecord = !u.scores[gameId] || score > u.scores[gameId];
+    if (isRecord) u.scores[gameId] = score;
+    u.xp  = (u.xp  || 0) + (isRecord ? 50 : 10);
+    u.level = Math.floor(u.xp / 500) + 1;
+    // historique (max 20)
+    u.history = u.history || [];
+    u.history.unshift({ gameId, score, date: Date.now() });
+    if (u.history.length > 20) u.history.pop();
+    this.saveUsers(users);
+    return isRecord;
+  },
+
+  getScore(gameId)  { const u = this.getCurrentUser(); return u?.scores?.[gameId] || null; },
+  getAllScores()     { return this.getCurrentUser()?.scores || {}; },
+  getHistory()      { return this.getCurrentUser()?.history || []; },
+
+  // ── FAVORIS ──────────────────────────────────────────────
+  toggleFavorite(gameId) {
+    const s = this.getSession(); if (!s) return null;
+    const users = this.getUsers();
+    const u = users[s.id];
+    u.favorites = u.favorites || [];
+    const idx = u.favorites.indexOf(gameId);
+    if (idx === -1) u.favorites.push(gameId); else u.favorites.splice(idx, 1);
+    this.saveUsers(users);
+    return idx === -1;
+  },
+
+  isFavorite(gameId) { return (this.getCurrentUser()?.favorites || []).includes(gameId); },
+  getFavorites()     { return this.getCurrentUser()?.favorites || []; },
+};
+
+// ── NAVBAR HELPER ────────────────────────────────────────────
+// Appelle updateNav() sur chaque page pour adapter la navbar à l'état de connexion
+function updateNav() {
+  const user = VX.getSession();
+  const loginBtn    = document.getElementById('navLoginBtn');
+  const registerBtn = document.getElementById('navRegisterBtn');
+  const avatarBtn   = document.getElementById('navAvatar');
+  const avatarLabel = document.getElementById('navAvatarLabel');
+
+  if (user) {
+    if (loginBtn)    loginBtn.style.display    = 'none';
+    if (registerBtn) registerBtn.style.display = 'none';
+    if (avatarBtn)   avatarBtn.style.display   = 'flex';
+    if (avatarLabel) avatarLabel.textContent   = user.username.substring(0,2).toUpperCase();
+  } else {
+    if (loginBtn)    loginBtn.style.display    = '';
+    if (registerBtn) registerBtn.style.display = '';
+    if (avatarBtn)   avatarBtn.style.display   = 'none';
+  }
+}
