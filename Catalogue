@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catalogue — Vaultex</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0d0d18;--surface:#16162a;--surface2:#1e1e36;--border:rgba(255,255,255,0.07);--accent1:#ff4d6d;--accent2:#ffd166;--accent3:#06d6a0;--accent4:#4cc9f0;--accent5:#c77dff;--text:#f0f0ff;--text-muted:#8888aa;--radius:16px;--radius-sm:10px}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+    .bg-blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.15;animation:blobFloat 12s ease-in-out infinite alternate}
+    .blob1{width:500px;height:500px;background:var(--accent5);top:-100px;left:-150px}
+    .blob2{width:400px;height:400px;background:var(--accent1);top:40%;right:-100px;animation-delay:-4s}
+    @keyframes blobFloat{from{transform:translateY(0)}to{transform:translateY(40px)}}
+    nav{position:sticky;top:0;z-index:100;background:rgba(13,13,24,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 28px;height:64px}
+    .nav-logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;background:linear-gradient(90deg,var(--accent4),var(--accent5));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;flex-shrink:0}
+    .nav-logo span{-webkit-text-fill-color:var(--accent1)}
+    .nav-search{flex:1;max-width:420px;margin:0 auto;display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:0 18px;gap:10px;transition:border-color .2s}
+    .nav-search:focus-within{border-color:var(--accent4)}
+    .nav-search input{background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:.95rem;width:100%;padding:10px 0}
+    .nav-search input::placeholder{color:var(--text-muted)}
+    .nav-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .btn{font-family:'Nunito',sans-serif;font-weight:800;border:none;cursor:pointer;border-radius:50px;padding:8px 20px;font-size:.9rem;transition:transform .15s,opacity .15s}
+    .btn:hover{transform:translateY(-1px);opacity:.92}
+    .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .btn-primary{background:linear-gradient(135deg,var(--accent1),var(--accent5));color:#fff}
+    .nav-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent4),var(--accent5));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;cursor:pointer;text-decoration:none;display:none}
+    .layout{position:relative;z-index:1;display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px)}
+    aside{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+    .sidebar-label{font-size:.7rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);padding:0 20px;margin-bottom:8px}
+    .sidebar-section{margin-bottom:28px}
+    .sidebar-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;color:var(--text-muted);font-weight:700;font-size:.92rem;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+    .sidebar-item:hover,.sidebar-item.active{color:var(--text);background:var(--surface2);border-left-color:var(--accent4)}
+    .sidebar-item.active{color:var(--accent4)}
+    .s-icon{font-size:1.1rem;width:22px;text-align:center}
+    main{padding:28px 32px}
+    .page-header{margin-bottom:28px}
+    .page-header h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:6px}
+    .page-header p{color:var(--text-muted);font-size:.95rem}
+    .filters-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+    .filter-group{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+    .filter-chip{background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--text-muted);transition:all .15s;white-space:nowrap}
+    .filter-chip:hover,.filter-chip.active{color:var(--accent4);border-color:var(--accent4);background:rgba(76,201,240,.1)}
+    .filter-divider{width:1px;height:28px;background:var(--border)}
+    .sort-select{background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:.82rem;font-weight:700;color:var(--text-muted);cursor:pointer;outline:none;font-family:'Nunito',sans-serif}
+    .results-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .results-count{color:var(--text-muted);font-size:.88rem;font-weight:700}
+    .results-count span{color:var(--accent4)}
+    .view-toggle{display:flex;gap:6px}
+    .view-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--text-muted);font-size:.85rem;transition:all .15s}
+    .view-btn.active{color:var(--accent4);border-color:var(--accent4)}
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;margin-bottom:32px}
+    .games-grid.list-view{grid-template-columns:1fr}
+    .game-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;position:relative}
+    .game-card:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.18);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+    .game-card:hover .play-overlay{opacity:1}
+    .game-thumb{aspect-ratio:4/3;width:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+    .play-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+    .play-btn-icon{width:44px;height:44px;background:white;border-radius:50%}
+    .play-btn-icon::after{content:'';display:block;margin:13px 0 0 16px;border-left:14px solid var(--bg);border-top:9px solid transparent;border-bottom:9px solid transparent}
+    .game-info{padding:10px 12px 12px}
+    .game-name{font-weight:800;font-size:.9rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .game-meta{display:flex;align-items:center;justify-content:space-between}
+    .game-cat{font-size:.72rem;font-weight:700;color:var(--text-muted)}
+    .game-rating{font-size:.75rem;font-weight:800;color:var(--accent2)}
+    .hot-badge{position:absolute;top:8px;right:8px;background:var(--accent1);color:#fff;font-size:.65rem;font-weight:900;padding:3px 8px;border-radius:20px;text-transform:uppercase}
+    .new-badge{position:absolute;top:8px;right:8px;background:var(--accent3);color:#000;font-size:.65rem;font-weight:900;padding:3px 8px;border-radius:20px;text-transform:uppercase}
+    .fav-badge{position:absolute;top:8px;left:8px;font-size:1rem;cursor:pointer;opacity:.7;transition:opacity .15s;z-index:2}
+    .fav-badge:hover{opacity:1}
+    .games-grid.list-view .game-card{display:flex;flex-direction:row;align-items:center}
+    .games-grid.list-view .game-thumb{width:120px;aspect-ratio:auto;height:80px;flex-shrink:0;font-size:2.5rem}
+    .games-grid.list-view .game-info{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+    .games-grid.list-view .game-name{font-size:1rem;white-space:normal}
+    .empty-state{text-align:center;padding:48px;color:var(--text-muted)}
+    .empty-state .emoji{font-size:3rem;margin-bottom:12px}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}aside{display:none}main{padding:16px}}
+    @media(max-width:600px){.games-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<div class="bg-blobs"><div class="blob blob1"></div><div class="blob blob2"></div></div>
+<nav>
+  <a href="index.html" class="nav-logo">Vault<span>ex</span></a>
+  <div class="nav-search">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Chercher un jeu..." oninput="renderGames()"/>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html"><button class="btn btn-ghost" id="navLoginBtn">Connexion</button></a>
+    <a href="login.html?tab=register"><button class="btn btn-primary" id="navRegisterBtn">S'inscrire</button></a>
+    <a href="profile.html" class="nav-avatar" id="navAvatar"><span id="navAvatarLabel">VX</span></a>
+  </div>
+</nav>
+<div class="layout">
+  <aside>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <a href="index.html"  class="sidebar-item"><span class="s-icon">🏠</span> Accueil</a>
+      <a href="catalogue.html" class="sidebar-item active"><span class="s-icon">🎮</span> Catalogue</a>
+      <a href="catalogue.html?filter=hot"       class="sidebar-item"><span class="s-icon">🔥</span> Tendances</a>
+      <a href="catalogue.html?filter=favorites" class="sidebar-item"><span class="s-icon">⭐</span> Mes favoris</a>
+      <a href="catalogue.html?filter=new"       class="sidebar-item"><span class="s-icon">✨</span> Nouveautés</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Catégories</div>
+      <a href="catalogue.html?cat=action"    class="sidebar-item"><span class="s-icon">⚔️</span> Action</a>
+      <a href="catalogue.html?cat=puzzle"    class="sidebar-item"><span class="s-icon">🧩</span> Puzzle</a>
+      <a href="catalogue.html?cat=course"    class="sidebar-item"><span class="s-icon">🏎️</span> Course</a>
+      <a href="catalogue.html?cat=sport"     class="sidebar-item"><span class="s-icon">⚽</span> Sport</a>
+      <a href="catalogue.html?cat=aventure"  class="sidebar-item"><span class="s-icon">🗺️</span> Aventure</a>
+      <a href="catalogue.html?cat=strategie" class="sidebar-item"><span class="s-icon">🧠</span> Stratégie</a>
+      <a href="catalogue.html?cat=casual"    class="sidebar-item"><span class="s-icon">🎲</span> Casual</a>
+    </div>
+  </aside>
+  <main>
+    <div class="page-header">
+      <h1 id="pageTitle">🎮 Catalogue</h1>
+      <p id="pageSubtitle">Tous les jeux disponibles sur Vaultex — joue maintenant, sans installation.</p>
+    </div>
+    <div class="filters-bar">
+      <div class="filter-group" id="filterChips">
+        <div class="filter-chip active" data-cat="all">🕹️ Tous</div>
+        <div class="filter-chip" data-cat="action">⚔️ Action</div>
+        <div class="filter-chip" data-cat="puzzle">🧩 Puzzle</div>
+        <div class="filter-chip" data-cat="course">🏎️ Course</div>
+        <div class="filter-chip" data-cat="sport">⚽ Sport</div>
+        <div class="filter-chip" data-cat="aventure">🗺️ Aventure</div>
+        <div class="filter-chip" data-cat="strategie">🧠 Stratégie</div>
+        <div class="filter-chip" data-cat="casual">🎲 Casual</div>
+      </div>
+      <div class="filter-divider"></div>
+      <select class="sort-select" id="sortSelect" onchange="renderGames()">
+        <option value="popular">⬇ Popularité</option>
+        <option value="rating">⭐ Note</option>
+        <option value="new">✨ Nouveautés</option>
+        <option value="az">A → Z</option>
+      </select>
+    </div>
+    <div class="results-info">
+      <div class="results-count"><span id="resultCount">0</span> jeux trouvés</div>
+      <div class="view-toggle">
+        <div class="view-btn active" id="gridBtn" onclick="setView('grid')">⊞</div>
+        <div class="view-btn" id="listBtn" onclick="setView('list')">☰</div>
+      </div>
+    </div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </main>
+</div>
+<script src="auth.js"></script>
+<script>
+let allGames = [], currentCat = 'all', isListView = false;
+const params = new URLSearchParams(location.search);
+
+async function init() {
+  updateNav();
+  const res = await fetch('games.json');
+  allGames = await res.json();
+
+  // Apply URL params
+  const urlCat    = params.get('cat');
+  const urlFilter = params.get('filter');
+  if (urlCat) { currentCat = urlCat; document.querySelectorAll('.filter-chip').forEach(c => { c.classList.toggle('active', c.dataset.cat === urlCat); }); }
+  if (urlFilter === 'hot')       document.getElementById('sortSelect').value = 'popular';
+  if (urlFilter === 'new')       document.getElementById('sortSelect').value = 'new';
+  if (urlFilter === 'favorites') { document.getElementById('pageTitle').textContent = '⭐ Mes Favoris'; document.getElementById('pageSubtitle').textContent = 'Les jeux que tu as mis en favoris.'; }
+  renderGames();
+}
+
+function renderGames() {
+  const q      = document.getElementById('searchInput').value.toLowerCase();
+  const sort   = document.getElementById('sortSelect').value;
+  const filter = params.get('filter');
+  let list = [...allGames];
+
+  if (filter === 'favorites') { const favs = VX.getFavorites(); list = list.filter(g => favs.includes(g.id)); }
+  if (currentCat !== 'all')  list = list.filter(g => g.category === currentCat);
+  if (q) list = list.filter(g => g.title.toLowerCase().includes(q) || g.description.toLowerCase().includes(q));
+  if (sort === 'popular') list.sort((a,b) => b.plays - a.plays);
+  else if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+  else if (sort === 'new')  { const n = list.filter(g=>g.tags.includes('new')); const o = list.filter(g=>!g.tags.includes('new')); list = [...n,...o]; }
+  else if (sort === 'az') list.sort((a,b) => a.title.localeCompare(b.title));
+
+  document.getElementById('resultCount').textContent = list.length;
+  const grid = document.getElementById('gamesGrid');
+  if (!list.length) { grid.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><p>Aucun jeu trouvé.<br>Essaie une autre catégorie.</p></div>'; return; }
+  grid.innerHTML = list.map(g => gameCard(g)).join('');
+}
+
+function gameCard(g) {
+  const isFav = VX.isFavorite(g.id);
+  return `
+    <div class="game-card" onclick="location.href='game.html?id=${g.id}'">
+      ${g.tags.includes('hot') ? '<div class="hot-badge">HOT</div>' : ''}
+      ${g.tags.includes('new') ? '<div class="new-badge">NEW</div>' : ''}
+      <div class="fav-badge" onclick="event.stopPropagation();toggleFav('${g.id}',this)">${isFav ? '⭐' : '☆'}</div>
+      <div class="game-thumb" style="background:${g.color}">
+        ${g.emoji}
+        <div class="play-overlay"><div class="play-btn-icon"></div></div>
+      </div>
+      <div class="game-info">
+        <div class="game-name">${g.title}</div>
+        <div class="game-meta">
+          <span class="game-cat">${g.category}</span>
+          <span class="game-rating">★ ${g.rating}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleFav(gameId, el) {
+  if (!VX.isLoggedIn()) { location.href='login.html'; return; }
+  const added = VX.toggleFavorite(gameId);
+  el.textContent = added ? '⭐' : '☆';
+  if (params.get('filter') === 'favorites') renderGames();
+}
+
+document.getElementById('filterChips').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip'); if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentCat = chip.dataset.cat;
+  renderGames();
+});
+
+function setView(mode) {
+  isListView = mode === 'list';
+  document.getElementById('gamesGrid').classList.toggle('list-view', isListView);
+  document.getElementById('gridBtn').classList.toggle('active', !isListView);
+  document.getElementById('listBtn').classList.toggle('active', isListView);
+}
+
+init();
+</script>
+</body>
+</html>
